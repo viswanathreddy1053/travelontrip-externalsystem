@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="TravelOnTrip-GetSchedules" doc:id="a510d680-8ee4-42c0-8018-a94f547a45e6" >
+		<db:select doc:name="getSchedules" doc:id="7a874bd7-4f3f-455c-8069-74932660a164" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from schedules where companyname= "TravelOnTrip";]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="15100fdd-ea77-4b06-be6f-2025d0a5b395" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f97c56f2-02cf-4bec-96f7-303e26689441" >
+				<ee:transform doc:name="Transform Message" doc:id="265ccdfe-e9a7-4ccd-9f09-fb9d0f75c8cf" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="statusCode" ><![CDATA[%dw 2.0
+output application/json
+---
+ 400]]></ee:set-variable>
+						<ee:set-variable variableName="message" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"ErrorMEssage" : error.description
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

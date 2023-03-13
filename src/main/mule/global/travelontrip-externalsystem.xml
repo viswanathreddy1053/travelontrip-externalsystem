@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<flow name="travelonTripExternalSystem" doc:id="4b54ada1-9ea8-4341-9c9a-f7ae3aa2d501" >
+		<http:listener doc:name="Listener" doc:id="4fb61a64-537e-4c51-87d0-74aba80d18fe" config-ref="HTTP_Listener_config" path="${http.listner.path}">
+			<http:error-response >
+				<http:body ><![CDATA[#[output application/json
+ ---
+error.description]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="9902de9c-9ce4-4c1b-8b4d-37e13f6c51c6" message='#["Travel on Trip Started"]'/>
+		<ee:transform doc:name="Transform Message" doc:id="a896b125-51d3-43bb-b1c1-068e0e1520f5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.uriParams.serviceType
+]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="serviceType" ><![CDATA[%dw 2.0
+output application/java
+---
+ attributes.uriParams.serviceType]]></ee:set-variable>
+				<ee:set-variable variableName="transactionId" ><![CDATA[%dw 2.0
+output application/json
+---
+attributes.headers.transactionId]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="d87fecf4-6ce9-4ff3-bff4-f92c38597837" >
+			<when expression='#[vars.serviceType =="routes"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="327cd128-79c7-4b80-a453-968438c81528" message="Flow Called for Type Routes"/>
+				<flow-ref doc:name="Routes" doc:id="6781d002-827a-4f64-807c-1442a01fe654" name="TravelOnTrip-GetRoutes"/>
+			</when>
+			<when expression='#[vars.serviceType=="schedules"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="927ffeac-78bd-4635-b795-01256ea63714" message="Flow Called for Type Schedules"/>
+				<flow-ref doc:name="Schedules" doc:id="6c0a0786-0dfa-4455-98e5-1127b98da21a" name="TravelOnTrip-GetSchedules"/>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="ebc3649e-8279-4275-b9d9-e2ac01505aaa" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="Logger" doc:id="4819ce5e-0125-4ec9-9c78-3c648f2be173" message='"Travel on Trip End" #[vars.transactionId]'/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3ce86059-8760-4b9b-a20e-3232ad146e6e" >
+				<set-payload value='#["Error Occurred in Parent Flow"]' doc:name="Set Payload" doc:id="77b92686-2bcc-4e05-974e-48660d3b6353" />
+				<logger level="INFO" doc:name="Logger" doc:id="28049554-fbe7-4d57-8d43-ba417392a892" message='#["Error Occurred in Parent Flow"]'/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
