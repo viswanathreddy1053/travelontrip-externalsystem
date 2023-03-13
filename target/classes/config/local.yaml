@@ -1,0 +1,13 @@
+http:
+  listner:
+    host: "0.0.0.0"
+    port: "8888"
+    path: "/travelOnTrip/{serviceType}"
+    
+db:
+  host: "localhost"
+  port: "3306"
+  user: "user1"
+  password: "Password@1"
+  database: "Development"
+  

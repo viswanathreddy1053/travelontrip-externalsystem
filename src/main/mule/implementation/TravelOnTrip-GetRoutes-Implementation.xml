@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="TravelOnTrip-GetRoutes" doc:id="59737a46-9d1f-4179-93ea-63785e866918" >
+		<db:select doc:name="getRoutes" doc:id="5254ee2c-935c-43c6-a2c5-5e475d9d5fe2" config-ref="Database_Config">
+			<db:sql ><![CDATA[select * from routes where companyname= "TravelOnTrip";]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="dcbe3174-b053-452f-9c61-a93b3c1d1d66" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="292b894b-7468-4c22-ac4e-29565c7813fb" message="#[payload]"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="51440300-8b92-44dd-a7bc-e5892d51a7f1" >
+				<set-payload value='"Error Occurred in GetRoutes Flow" #[error.description]' doc:name="Set Payload" doc:id="b767214b-5806-4897-9239-e9c66b33ef92" />
+				<logger level="INFO" doc:name="Logger" doc:id="af231266-f03f-4daa-b6e1-5b8517e31494" message='"Error Occurred in GetRoutes Flow" #[error.description]'/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
